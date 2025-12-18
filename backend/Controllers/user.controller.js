@@ -1,6 +1,8 @@
 import User from '../models/user.models.js';
+import router from '../routes/user.routes.js';
 import * as  userServices from '../services/user.services.js';
 import { validationResult } from 'express-validator';
+import redisClient from '../services/redis.services.js';
 
 export const createUserController = async (req, res) => {
    const errors = validationResult(req);
@@ -27,7 +29,7 @@ export const loginUserController = async (req, res) => {
         if (!user) {
             return res.status(401).json({ message: "Invalid email or password" });
         }   
-        const isMatch = await user.isValidPassword (password);
+        const isMatch = await user.isValidPassword(password);
         if (!isMatch) {
             return res.status(401).json({ message: "Invalid email or password" });
         }
@@ -37,3 +39,30 @@ export const loginUserController = async (req, res) => {
         return res.status(500).json({ message: error.message });
     }
 };
+
+export const profileController = async (req, res) => {
+  try {
+    res.status(200).json({
+      user: req.user
+    });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};
+
+export const logoutController = async (req, res) =>{
+
+    try {
+         const token = req.cookies.token || req.headers.authorization?.split(" ")[1];
+         if(token){
+            await redisClient.set( token , 'logout', 'EX ',  60 * 60 * 24  );
+         } 
+         
+            res.status(200).json({ message : "User logged out successfully" });
+
+
+    } catch (error) {
+        
+    }
+}

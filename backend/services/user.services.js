@@ -7,8 +7,8 @@ export const createUser = async ({
     throw new Error("All fields are required");
    }
 
-   const hashedPassword = await User.hashPassword(password);
-   const user = await User.create({
+    const hashedPassword = await User.hashPassword(password);
+    const user = await User.create({
     email,
     password : hashedPassword
    }) 
