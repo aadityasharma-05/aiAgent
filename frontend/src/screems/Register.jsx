@@ -1,6 +1,8 @@
 import React from 'react';
+import { useContext } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import axios from '../config/axios.js';
+import UserContext from '../context/user.context.jsx';
 
 const Register = () => {
   const navigate = useNavigate();
@@ -9,6 +11,7 @@ const Register = () => {
   const [password, setPassword] = React.useState('');
   const [loading, setLoading] = React.useState(false);
   const [error, setError] = React.useState('');
+  const { setUser } = useContext(UserContext);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -22,12 +25,22 @@ const Register = () => {
     try {
       setLoading(true);
 
-      await axios.post('/users/register', {
+     const response =  await axios.post('/users/register', {
         email,
         password,
       });
 
+      if (response.data?.token) {
+        localStorage.setItem('token', response.data.token);
+      }
+
+      // ✅ Store user in context
+      if (response.data?.user) {
+        setUser(response.data.user);
+      }
+
       // ✅ Redirect to login after successful registration
+    
       navigate('/');
 
     } catch (err) {
